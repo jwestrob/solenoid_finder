@@ -1,0 +1,15 @@
+# Core dependencies
+numpy>=1.21.0
+scipy>=1.7.0
+torch>=2.0.0
+tqdm>=4.62.0
+requests>=2.25.0
+
+# Hugging Face for ESM++ model
+transformers>=4.30.0
+
+# ESM3 structure prediction (optional - requires API key)
+esm>=3.0.0
+
+# Visualization (for APC images)
+matplotlib>=3.5.0
