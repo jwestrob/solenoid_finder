@@ -205,7 +205,7 @@ Examples:
     # Step 1: ESM++ inference (outputs to global cache)
     if not args.skip_esmpp:
         cmd = [
-            sys.executable, str(base_dir / "run_esmpp_proteome.py"),
+            sys.executable, str(base_dir / "scripts" / "run_esmpp_proteome.py"),
             "--fasta", str(args.fasta),
             "--device", args.device,
             "--dtype", args.dtype,
@@ -223,7 +223,7 @@ Examples:
     # Step 2: Solenoid detection (outputs to run directory)
     if not args.skip_detection:
         cmd = [
-            sys.executable, str(base_dir / "generate_viewer_data.py"),
+            sys.executable, str(base_dir / "scripts" / "generate_viewer_data.py"),
             "--output", str(run_dir),
             "--fasta", str(args.fasta),
         ]

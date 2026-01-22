@@ -203,7 +203,7 @@ def main():
     args = parser.parse_args()
 
     # Setup paths
-    base_dir = Path(__file__).parent
+    base_dir = Path(__file__).parent.parent
     results_path = base_dir / "viewer" / "data" / "results.json"
     data_dir = base_dir / "data"
     output_dir = args.output if args.output else base_dir / "viewer" / "structures"

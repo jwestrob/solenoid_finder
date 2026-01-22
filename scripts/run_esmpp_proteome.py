@@ -200,7 +200,7 @@ def main():
     args = parser.parse_args()
 
     # Setup paths
-    base_dir = Path(__file__).parent
+    base_dir = Path(__file__).parent.parent
     output_dir = args.output if args.output else base_dir / 'cache' / 'apc'
     output_dir.mkdir(parents=True, exist_ok=True)
 

@@ -13,7 +13,7 @@ from pathlib import Path
 import sys
 from typing import Dict, Optional, Set
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from detect_solenoids import detect_and_score_solenoid_regions, compute_soft_votes
 
 # ESM3 folding (optional)
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-images", action="store_true", help="Skip APC image generation")
     args = parser.parse_args()
 
-    base_dir = Path(__file__).parent
+    base_dir = Path(__file__).parent.parent
     cache_dir = base_dir / "cache"
     apc_dir = cache_dir / "apc"
     structures_dir = cache_dir / "structures"

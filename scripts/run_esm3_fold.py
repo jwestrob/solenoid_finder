@@ -107,7 +107,7 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Limit number of proteins")
     args = parser.parse_args()
 
-    base_dir = Path(__file__).parent
+    base_dir = Path(__file__).parent.parent
     key_file = base_dir / ".esm_api_key"
     results_path = base_dir / "viewer" / "data" / "results.json"
     output_dir = base_dir / "viewer" / "structures"

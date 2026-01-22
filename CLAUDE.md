@@ -15,6 +15,12 @@ Solenoid_detector/
 │   ├── index.json        # Registry of all analysis runs
 │   └── {run_name}/
 │       └── results.json  # Detection results for this run
+├── scripts/
+│   ├── generate_viewer_data.py
+│   ├── run_esmpp_proteome.py
+│   ├── run_esm3_fold.py
+│   ├── run_esmfold.py
+│   └── download_archaeon_proteome.py
 ├── viewer/
 │   ├── runs -> ../runs           # Symlink for web access
 │   ├── structures -> ../cache/structures
@@ -22,9 +28,7 @@ Solenoid_detector/
 │   ├── index.html
 │   └── app.js
 ├── run_pipeline.py       # Main entry point
-├── detect_solenoids.py   # Core detection algorithm
-├── generate_viewer_data.py
-└── run_esmpp_proteome.py
+└── detect_solenoids.py   # Core detection algorithm
 ```
 
 ## Key Files
