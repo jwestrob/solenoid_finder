@@ -8,8 +8,11 @@ requests>=2.25.0
 # Hugging Face for ESM++ model
 transformers>=4.30.0
 
-# ESM3 structure prediction (optional - requires API key)
-esm>=3.0.0
+# Structure prediction (optional)
+# ESM3 via EvolutionaryScale API (requires Python 3.10+):
+#   pip install esm>=3.0.0
+# ESMFold local inference (works on Python 3.8+):
+#   pip install fair-esm
 
 # Visualization (for APC images)
 matplotlib>=3.5.0
