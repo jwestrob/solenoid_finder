@@ -1,0 +1,103 @@
+# =============================================================================
+# Solenoid Detector - .gitignore
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Generated Data (Large Files)
+# -----------------------------------------------------------------------------
+
+# APC matrices from ESM++ (can be 100s of MB to GBs)
+cache/
+*.npy
+
+# Generated viewer data and images
+viewer/data/
+viewer/apc_images/
+
+# Debug/comparison images
+viewer/*.png
+*.png
+
+# External results symlinks
+results/
+
+# Downloaded proteome data (users should download their own)
+data/
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# -----------------------------------------------------------------------------
+# IDE / Editor
+# -----------------------------------------------------------------------------
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# -----------------------------------------------------------------------------
+# macOS
+# -----------------------------------------------------------------------------
+
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# -----------------------------------------------------------------------------
+# Project-specific
+# -----------------------------------------------------------------------------
+
+# Backup files
+*.backup
+
+# Cached data
+cached_protein_ids.json
+
+# Claude Code session data (contains conversation history)
+.claude/
+
+# Temporary files
+tmp/
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# -----------------------------------------------------------------------------
+# Model weights (if downloaded locally)
+# -----------------------------------------------------------------------------
+
+*.bin
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# Hugging Face cache (if in project dir)
+.huggingface/
