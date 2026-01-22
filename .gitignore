@@ -10,9 +10,14 @@
 cache/
 *.npy
 
-# Generated viewer data and images
+# Generated viewer data, images, and structures
 viewer/data/
 viewer/apc_images/
+viewer/structures
+viewer/runs
+
+# Run results (per-user analysis data)
+runs/
 
 # Debug/comparison images
 viewer/*.png
@@ -23,6 +28,9 @@ results/
 
 # Downloaded proteome data (users should download their own)
 data/
+
+# Test proteins folder
+proteins/
 
 # -----------------------------------------------------------------------------
 # Python
@@ -101,3 +109,7 @@ tmp/
 
 # Hugging Face cache (if in project dir)
 .huggingface/
+
+# API keys
+.esm_api_key
+.env

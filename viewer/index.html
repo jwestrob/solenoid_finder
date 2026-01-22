@@ -29,11 +29,51 @@
             background: #16213e;
             padding: 1rem 2rem;
             border-bottom: 1px solid #0f3460;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
             font-size: 1.5rem;
             font-weight: 500;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .run-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .run-selector label {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .run-selector select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .run-selector select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+
+        .run-info {
+            font-size: 0.75rem;
+            color: #888;
         }
 
         .container {
@@ -179,7 +219,16 @@
             margin-bottom: 0.25rem;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .protein-item .protein-name {
+            word-break: break-all;
+            flex: 1;
+            min-width: 0;
+            font-size: 0.85rem;
+            line-height: 1.3;
         }
 
         .protein-item:hover {
@@ -302,6 +351,15 @@
 <body>
     <header>
         <h1>Solenoid Detector Viewer</h1>
+        <div class="header-controls">
+            <div class="run-selector">
+                <label for="run-select">Dataset:</label>
+                <select id="run-select">
+                    <option value="">Loading runs...</option>
+                </select>
+            </div>
+            <div class="run-info" id="run-info"></div>
+        </div>
     </header>
 
     <div class="container">

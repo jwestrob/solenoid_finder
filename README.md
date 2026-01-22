@@ -120,8 +120,34 @@ Open http://localhost:8080 in your browser.
 - Filter by n_harmonics, continuity, repeats
 - Sort by votes, continuity, band_score, etc.
 - View APC attention maps with detected regions highlighted
-- View AlphaFold 3D structures (loaded from EBI)
+- View 3D structures (local ESMFold or AlphaFold from EBI)
 - Detailed metrics for each detected region
+
+### Step 5 (Optional): Predict Structures with ESMFold
+
+For proteins without AlphaFold coverage, you can predict structures using ESMFold:
+
+```bash
+# Using ESMFold API (no GPU required, but rate-limited)
+python run_esmfold.py --mode api --min-votes 4
+
+# Using local ESMFold model (requires GPU with ~16GB VRAM)
+python run_esmfold.py --mode local --device cuda --min-votes 4
+
+# Predict for specific proteins
+python run_esmfold.py --proteins D4GQW4 D4GPD9 Q4J907
+```
+
+**Options:**
+| Flag | Description |
+|------|-------------|
+| `--mode api\|local` | Use ESMFold API or local model |
+| `--min-votes N` | Only predict for proteins with N+ votes |
+| `--max-length N` | Skip proteins longer than N residues |
+| `--proteins ID1 ID2` | Predict specific proteins |
+| `--resume` | Skip already-predicted structures |
+
+Structures are saved to `viewer/structures/` and automatically loaded by the viewer (prioritized over AlphaFold).
 
 ## Detection Algorithm
 
@@ -163,19 +189,24 @@ solenoid_detector/
 ├── detect_solenoids.py          # Core detection algorithm
 ├── generate_viewer_data.py      # Generate viewer JSON and images
 ├── run_esmpp_proteome.py        # ESM++ inference script
+├── run_esmfold.py               # ESMFold structure prediction
 ├── download_archaeon_proteome.py # UniProt proteome downloader
+├── run_sulfolobus.sh            # Example pipeline script
+├── run_haloferax.sh             # Example pipeline script
 ├── SOLENOID.md                  # Detailed algorithm documentation
 ├── CLAUDE.md                    # Project context for Claude Code
 ├── viewer/
 │   ├── index.html               # Viewer HTML
-│   └── app.js                   # Viewer JavaScript
+│   ├── app.js                   # Viewer JavaScript
+│   ├── structures/              # [gitignored] Local ESMFold structures
+│   │   └── *.pdb
+│   ├── data/                    # [gitignored] Generated results
+│   │   └── results.json
+│   └── apc_images/              # [gitignored] Generated images
 ├── cache/                       # [gitignored] Generated APC matrices
 │   └── apc_matrices/*.npy
-├── data/                        # [gitignored] Input proteome data
-│   └── {organism}/*.fasta
-└── viewer/
-    ├── data/                    # [gitignored] Generated results
-    │   └── results.json
+└── data/                        # [gitignored] Input proteome data
+    └── {organism}/*.fasta
     └── apc_images/              # [gitignored] Generated images
 ```
 

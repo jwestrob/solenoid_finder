@@ -9,16 +9,14 @@ let minHarmonics = 4;
 let minContinuity = 0;
 let minRepeats = 5;
 let sortBy = 'votes';
+let currentRunId = null;
+let runsIndex = null;
 
 // Initialize the app
 async function init() {
     try {
-        // Load results data
-        const response = await fetch('data/results.json');
-        resultsData = await response.json();
-
-        // Initialize the protein list
-        renderProteinList();
+        // Try to load runs index
+        await loadRunsIndex();
 
         // Set up event listeners
         setupEventListeners();
@@ -26,18 +24,111 @@ async function init() {
         // Initialize 3Dmol viewer
         initStructureViewer();
 
-        // Select first protein with solenoid
-        const firstSolenoid = Object.keys(resultsData).find(id => resultsData[id].has_solenoid);
-        if (firstSolenoid) {
-            selectProtein(firstSolenoid);
-        }
     } catch (error) {
         console.error('Error initializing app:', error);
         document.getElementById('protein-list').innerHTML = '<li class="loading">Error loading data</li>';
     }
 }
 
+async function loadRunsIndex() {
+    const runSelect = document.getElementById('run-select');
+    const runInfo = document.getElementById('run-info');
+
+    try {
+        // Try to load runs/index.json
+        const response = await fetch('runs/index.json');
+        if (response.ok) {
+            runsIndex = await response.json();
+
+            if (runsIndex.runs && runsIndex.runs.length > 0) {
+                // Populate dropdown
+                runSelect.innerHTML = runsIndex.runs.map(run =>
+                    `<option value="${run.id}">${run.name} (${run.n_solenoids} solenoids)</option>`
+                ).join('');
+
+                // Load the first run
+                await loadRun(runsIndex.runs[0].id);
+                return;
+            }
+        }
+    } catch (e) {
+        console.log('No runs index found, trying legacy data/results.json');
+    }
+
+    // Fallback: try to load legacy data/results.json
+    try {
+        const response = await fetch('data/results.json');
+        if (response.ok) {
+            resultsData = await response.json();
+            runSelect.innerHTML = '<option value="">Legacy Data</option>';
+            runInfo.textContent = `${Object.keys(resultsData).length} proteins`;
+
+            // Initialize the protein list
+            renderProteinList();
+
+            // Select first protein with solenoid
+            const firstSolenoid = Object.keys(resultsData).find(id => resultsData[id].has_solenoid);
+            if (firstSolenoid) {
+                selectProtein(firstSolenoid);
+            }
+            return;
+        }
+    } catch (e) {
+        console.error('Failed to load legacy data:', e);
+    }
+
+    // No data found
+    runSelect.innerHTML = '<option value="">No data found</option>';
+    document.getElementById('protein-list').innerHTML = '<li class="loading">No data available. Run the pipeline first.</li>';
+}
+
+async function loadRun(runId) {
+    currentRunId = runId;
+    const runInfo = document.getElementById('run-info');
+
+    // Find run metadata
+    const runMeta = runsIndex?.runs?.find(r => r.id === runId);
+
+    try {
+        // Load results for this run
+        const response = await fetch(`runs/${runId}/results.json`);
+        if (!response.ok) throw new Error('Failed to load run');
+
+        resultsData = await response.json();
+
+        // Update run info
+        if (runMeta) {
+            runInfo.textContent = `${runMeta.date} | ${runMeta.n_proteins} proteins | ${runMeta.n_solenoids} solenoids | ${runMeta.n_high_conf} high-conf`;
+        } else {
+            runInfo.textContent = `${Object.keys(resultsData).length} proteins`;
+        }
+
+        // Update dropdown selection
+        const runSelect = document.getElementById('run-select');
+        runSelect.value = runId;
+
+        // Initialize the protein list
+        renderProteinList();
+
+        // Select first protein with solenoid
+        const firstSolenoid = Object.keys(resultsData).find(id => resultsData[id].has_solenoid);
+        if (firstSolenoid) {
+            selectProtein(firstSolenoid);
+        }
+    } catch (error) {
+        console.error('Error loading run:', error);
+        runInfo.textContent = 'Error loading run';
+    }
+}
+
 function setupEventListeners() {
+    // Run selector
+    document.getElementById('run-select').addEventListener('change', (e) => {
+        if (e.target.value) {
+            loadRun(e.target.value);
+        }
+    });
+
     // Search input
     document.getElementById('search-input').addEventListener('input', (e) => {
         renderProteinList(e.target.value);
@@ -219,7 +310,7 @@ function renderProteinList(searchTerm = '') {
         return `
             <li class="protein-item ${isActive ? 'active' : ''} ${hasSolenoid ? 'has-solenoid' : ''}"
                 data-id="${id}">
-                <span>${id}</span>
+                <span class="protein-name">${id}</span>
                 <span class="badges">
                     ${hasSolenoid ? `<span class="badge badge-votes">${maxVotes}/5</span>` : ''}
                     ${hasSolenoid ? `<span class="badge">n=${maxHarm}</span>` : ''}
@@ -345,65 +436,107 @@ async function loadStructure(proteinId, data) {
     loadingDiv.style.zIndex = '10';
     container.appendChild(loadingDiv);
 
+    let pdbData = null;
+    let structureSource = null;
+
     try {
-        // First get the correct URL from AlphaFold API
-        const apiUrl = `https://alphafold.ebi.ac.uk/api/prediction/${proteinId}`;
-        const apiResponse = await fetch(apiUrl, { signal: abortController.signal });
+    // Outer try block for error handling
 
-        if (!apiResponse.ok) throw new Error('Protein not in AlphaFold');
-        const apiData = await apiResponse.json();
+        try {
+            // First, try to load from local structures (ESM3/ESMFold)
+        const localUrl = `structures/${proteinId}.pdb`;
+        const localResponse = await fetch(localUrl, { signal: abortController.signal });
 
-        const pdbUrl = apiData[0]?.pdbUrl;
-        if (!pdbUrl) throw new Error('No PDB URL found');
-
-        // Check if we're still the current request
-        if (currentProtein !== requestId) return;
-
-        const pdbResponse = await fetch(pdbUrl, { signal: abortController.signal });
-        if (!pdbResponse.ok) throw new Error('Structure not found');
-        const pdbData = await pdbResponse.text();
-
-        // Final check - make sure we're still the current protein
-        if (currentProtein !== requestId) return;
-
-        // Remove loading indicator
-        loadingDiv.remove();
-
-        // Add model to viewer
-        structureViewer.addModel(pdbData, 'pdb');
-
-        // Color by solenoid regions using range selector (more efficient)
-        if (data.regions.length > 0) {
-            // Default color (gray)
-            structureViewer.setStyle({}, {
-                cartoon: { color: '#666666' }
-            });
-
-            // Highlight solenoid regions (red) - use range strings instead of arrays
-            data.regions.forEach(region => {
-                const start = region.start + 1;  // PDB is 1-indexed
-                const end = region.end;
-                structureViewer.setStyle(
-                    { resi: [start + '-' + end] },
-                    { cartoon: { color: '#e94560' } }
-                );
-            });
-        } else {
-            // No solenoid - color by spectrum
-            structureViewer.setStyle({}, {
-                cartoon: { color: 'spectrum' }
-            });
+        if (localResponse.ok) {
+            pdbData = await localResponse.text();
+            structureSource = 'ESM3';
         }
+    } catch (e) {
+        // Local structure not found, will try AlphaFold
+    }
 
-        structureViewer.zoomTo();
-        structureViewer.resize();
-        structureViewer.render();
+    // If no local structure, try AlphaFold API
+    if (!pdbData) {
+        try {
+            const apiUrl = `https://alphafold.ebi.ac.uk/api/prediction/${proteinId}`;
+            const apiResponse = await fetch(apiUrl, { signal: abortController.signal });
+
+            if (!apiResponse.ok) throw new Error('Protein not in AlphaFold');
+            const apiData = await apiResponse.json();
+
+            const pdbUrl = apiData[0]?.pdbUrl;
+            if (!pdbUrl) throw new Error('No PDB URL found');
+
+            // Check if we're still the current request
+            if (currentProtein !== requestId) return;
+
+            const pdbResponse = await fetch(pdbUrl, { signal: abortController.signal });
+            if (!pdbResponse.ok) throw new Error('Structure not found');
+            pdbData = await pdbResponse.text();
+            structureSource = 'AlphaFold';
+        } catch (e) {
+            throw new Error('Structure not available');
+        }
+    }
+
+    // Check if we're still the current request
+    if (currentProtein !== requestId) return;
+
+    if (!pdbData) {
+        throw new Error('No structure data');
+    }
+
+    // Remove loading indicator
+    loadingDiv.remove();
+
+    // Update panel header to show structure source
+    const panelHeader = container.closest('.viewer-panel').querySelector('.panel-header');
+    if (panelHeader) {
+        panelHeader.textContent = `3D Structure (${structureSource})`;
+    }
+
+    // Add model to viewer
+    structureViewer.addModel(pdbData, 'pdb');
+
+    // Color by solenoid regions using range selector (more efficient)
+    if (data.regions.length > 0) {
+        // Default color (gray)
+        structureViewer.setStyle({}, {
+            cartoon: { color: '#666666' }
+        });
+
+        // Highlight solenoid regions (red) - use range strings instead of arrays
+        data.regions.forEach(region => {
+            const start = region.start + 1;  // PDB is 1-indexed
+            const end = region.end;
+            structureViewer.setStyle(
+                { resi: [start + '-' + end] },
+                { cartoon: { color: '#e94560' } }
+            );
+        });
+    } else {
+        // No solenoid - color by spectrum
+        structureViewer.setStyle({}, {
+            cartoon: { color: 'spectrum' }
+        });
+    }
+
+    structureViewer.zoomTo();
+    structureViewer.resize();
+    structureViewer.render();
 
     } catch (error) {
         // Ignore abort errors (user switched proteins)
         if (error.name === 'AbortError') return;
 
-        loadingDiv.textContent = 'Structure not available from AlphaFold';
+        loadingDiv.textContent = 'Structure not available (no local ESM3 or AlphaFold)';
+
+        // Reset panel header
+        const panelHeader = container.closest('.viewer-panel')?.querySelector('.panel-header');
+        if (panelHeader) {
+            panelHeader.textContent = '3D Structure';
+        }
+
         console.error('Error loading structure:', error);
     }
 }

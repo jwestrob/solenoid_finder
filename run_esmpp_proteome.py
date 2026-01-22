@@ -7,7 +7,7 @@ This is a simplified wrapper around the ESM++ pipeline for processing new proteo
 Usage:
     python run_esmpp_proteome.py --fasta data/sulfolobus_acidocaldarius/sulfolobus_acidocaldarius_alphafold.fasta --device mps
 
-The output APC matrices will be saved to cache/apc_matrices/{protein_id}.npy
+The output APC matrices will be saved to cache/apc/{protein_id}.npy
 for use with generate_viewer_data.py
 """
 
@@ -158,21 +158,25 @@ def load_fasta(fasta_path: Path) -> Dict[str, str]:
             line = line.strip()
             if line.startswith('>'):
                 if current_id:
-                    sequences[current_id] = ''.join(current_seq)
+                    seq = ''.join(current_seq).replace('*', '')  # Remove stop codons
+                    sequences[current_id] = seq
                 # Parse ID - handle various formats
                 header = line[1:]
-                if '|' in header:
-                    # UniProt format: >sp|Q9UY87|...
+                if header.startswith(('sp|', 'tr|')):
+                    # UniProt format: >sp|Q9UY87|... or >tr|A0A123|...
                     parts = header.split('|')
                     current_id = parts[1] if len(parts) >= 2 else parts[0]
                 else:
-                    current_id = header.split()[0]
+                    # Generic format: use first whitespace-delimited token
+                    # Also split on | to handle Prodigal/metagenomic formats
+                    current_id = header.split()[0].split('|')[0]
                 current_seq = []
             else:
                 current_seq.append(line)
 
     if current_id:
-        sequences[current_id] = ''.join(current_seq)
+        seq = ''.join(current_seq).replace('*', '')
+        sequences[current_id] = seq
 
     return sequences
 
@@ -182,7 +186,7 @@ def main():
     parser.add_argument("--fasta", type=Path, required=True,
                         help="Input FASTA file with protein sequences")
     parser.add_argument("--output", type=Path, default=None,
-                        help="Output directory (default: cache/apc_matrices)")
+                        help="Output directory (default: cache/apc)")
     parser.add_argument("--device", type=str, default="mps",
                         help="Device: cuda, mps, or cpu")
     parser.add_argument("--dtype", type=str, default="fp32",
@@ -197,7 +201,7 @@ def main():
 
     # Setup paths
     base_dir = Path(__file__).parent
-    output_dir = args.output if args.output else base_dir / 'cache' / 'apc_matrices'
+    output_dir = args.output if args.output else base_dir / 'cache' / 'apc'
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Load sequences
