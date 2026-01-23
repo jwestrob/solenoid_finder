@@ -191,7 +191,7 @@ def main():
                         help="Device: cuda, mps, or cpu")
     parser.add_argument("--dtype", type=str, default="fp32",
                         help="Model dtype: fp16, bf16, fp32 (fp32 recommended for mps)")
-    parser.add_argument("--max-length", type=int, default=1024,
+    parser.add_argument("--max-length", type=int, default=2048,
                         help="Maximum sequence length to process")
     parser.add_argument("--limit", type=int, default=None,
                         help="Limit number of proteins to process")

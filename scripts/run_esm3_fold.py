@@ -101,7 +101,7 @@ def predict_structure(client: ESM3ForgeInferenceClient, sequence: str, protein_i
 def main():
     parser = argparse.ArgumentParser(description="Run ESM3 folding on solenoid proteins")
     parser.add_argument("--min-votes", type=int, default=4, help="Minimum votes threshold")
-    parser.add_argument("--max-length", type=int, default=1024, help="Maximum sequence length")
+    parser.add_argument("--max-length", type=int, default=2048, help="Maximum sequence length")
     parser.add_argument("--proteins", nargs="+", default=None, help="Specific protein IDs")
     parser.add_argument("--resume", action="store_true", help="Skip existing structures")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of proteins")

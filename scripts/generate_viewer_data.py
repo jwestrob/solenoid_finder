@@ -105,7 +105,7 @@ def load_sequences(base_dir: Path) -> Dict[str, str]:
 
 def generate_results_json(apc_dir: Path, output_path: Path, protein_ids: Set[str] = None,
                           sequences: Dict[str, str] = None,
-                          fold_min_votes: int = 4, fold_max_length: int = 1024,
+                          fold_min_votes: int = 4, fold_max_length: int = 2048,
                           structures_dir: Path = None):
     """Generate results.json with detected solenoid regions for cached proteins."""
 
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     parser.add_argument("--fasta", type=Path, help="Input FASTA file (to filter which proteins to process)")
     parser.add_argument("--fold", action="store_true", help="Enable ESM3 structure prediction")
     parser.add_argument("--fold-min-votes", type=int, default=4, help="Min votes to trigger folding")
-    parser.add_argument("--fold-max-length", type=int, default=1024, help="Max sequence length to fold")
+    parser.add_argument("--fold-max-length", type=int, default=2048, help="Max sequence length to fold")
     parser.add_argument("--no-images", action="store_true", help="Skip APC image generation")
     args = parser.parse_args()
 

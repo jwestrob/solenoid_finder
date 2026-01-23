@@ -134,8 +134,8 @@ Examples:
         help="Model dtype: fp16, bf16, fp32 (default: fp32, recommended for mps)"
     )
     parser.add_argument(
-        "--max-length", type=int, default=1024,
-        help="Maximum sequence length to process (default: 1024)"
+        "--max-length", type=int, default=2048,
+        help="Maximum sequence length to process (default: 2048)"
     )
     parser.add_argument(
         "--resume", action="store_true",
@@ -152,8 +152,8 @@ Examples:
         help="Minimum votes to trigger structure prediction (default: 4)"
     )
     parser.add_argument(
-        "--fold-max-length", type=int, default=1024,
-        help="Maximum sequence length to fold (default: 1024)"
+        "--fold-max-length", type=int, default=2048,
+        help="Maximum sequence length to fold (default: 2048)"
     )
 
     # Viewer options
